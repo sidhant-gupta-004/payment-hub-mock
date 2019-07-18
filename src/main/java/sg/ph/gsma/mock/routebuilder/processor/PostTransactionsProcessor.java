@@ -26,8 +26,8 @@ public class PostTransactionsProcessor implements Processor {
     @Override
     public void process (Exchange exchange) throws Exception {
 
-        Message data = exchange.getIn();
-        String ndata = data.toString();
+        //Message data = exchange.getIn();
+        String body = exchange.getIn().getBody(String.class);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -36,16 +36,18 @@ public class PostTransactionsProcessor implements Processor {
         String corrId = UUID.randomUUID().toString();
         httpHeaders.set("X-CorrelationID", corrId);
 
-        httpHeaders.set("Date", "2019-07-07T12:00:00.123Z");
+        httpHeaders.set("Date", "2019-07-17T12:00:00.123Z");
 
-        HttpEntity<String> entity = new HttpEntity<>(ndata, httpHeaders);
-        HttpMethod hm = HttpMethod.POST;
+        HttpEntity<String> entity = new HttpEntity<>(body, httpHeaders);
+        System.out.println(entity);
+
+        HttpMethod httpMethod = HttpMethod.POST;
 
         String apikey = "u8YfSQNnNsGFAaqRm3sGShpO2ywLRJgs";
 
-        String endpointUrl = "http://sandbox.mobilemoneyapi.io/simulator/v1.0/mm/transactions?apikey=" + apikey;
+        String endpointUrl = "https://sandbox.mobilemoneyapi.io/simulator/v1.0/mm/transactions?apikey=" + apikey;
 
-        System.out.println(restTemplate.exchange(endpointUrl, hm, entity, String.class).getBody());
+        System.out.println(restTemplate.exchange(endpointUrl, httpMethod, entity, String.class).getBody());
 
         //exchange.getIn().setBody();
     }
