@@ -1,7 +1,6 @@
 package sg.ph.gsma.mock.routebuilder.processor;
 
 import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.Processor;
 
 import org.springframework.http.HttpEntity;
@@ -10,11 +9,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import sg.ph.gsma.mock.dto.TransactionObject;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Component("postTransactionsProcessor")
+@Component("postTransactions")
 public class PostTransactionsProcessor implements Processor {
 
     RestTemplate restTemplate;
@@ -28,6 +29,7 @@ public class PostTransactionsProcessor implements Processor {
 
         //Message data = exchange.getIn();
         String body = exchange.getIn().getBody(String.class);
+        //System.out.println(body);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -36,10 +38,11 @@ public class PostTransactionsProcessor implements Processor {
         String corrId = UUID.randomUUID().toString();
         httpHeaders.set("X-CorrelationID", corrId);
 
-        httpHeaders.set("Date", "2019-07-17T12:00:00.123Z");
+        String date = LocalDateTime.now().toString();
+        httpHeaders.set("Date", date);
 
         HttpEntity<String> entity = new HttpEntity<>(body, httpHeaders);
-        System.out.println(entity);
+        //System.out.println("Entity: " + entity);
 
         HttpMethod httpMethod = HttpMethod.POST;
 
@@ -47,8 +50,11 @@ public class PostTransactionsProcessor implements Processor {
 
         String endpointUrl = "https://sandbox.mobilemoneyapi.io/simulator/v1.0/mm/transactions?apikey=" + apikey;
 
-        System.out.println(restTemplate.exchange(endpointUrl, httpMethod, entity, String.class).getBody());
+        TransactionObject response = restTemplate.exchange(endpointUrl, httpMethod, entity,
+                                        TransactionObject.class).getBody();
 
-        //exchange.getIn().setBody();
+        //System.out.println(response.toString());
+
+        exchange.getIn().setBody(response);
     }
 }
